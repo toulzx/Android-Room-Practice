@@ -4,24 +4,38 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.room.Room;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
     public static final String DATABASE_FILE_NAME = "word_database";
 
-    private TextView textView;
+    private Switch aSwitch;
     private Button btnInsert, btnClear, btnUpdate, btnDelete;
 
     private WordViewModel wordViewModel;
+
+    String[] english = {
+            "Hello", "World", "Android", "Google", "Studio", "Project",
+            "Database", "Recycler", "View", "String", "Value", "Integer"
+    };
+    String[] chinese = {
+            "你好", "世界", "安卓系统", "谷歌公司", "工作室", "项目",
+            "数据库", "回收站", "视图", "字符串", "价值", "整数类型"
+    };
+
+    private RecyclerView recyclerView;
+    private MyAdapter myAdapterNormal, myAdapterCard;
 
 
     @Override
@@ -31,33 +45,59 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //  adapter & recycleView
+        myAdapterNormal = new MyAdapter(false);
+        myAdapterCard = new MyAdapter(true);
+
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(myAdapterNormal);
+
         // viewModel instantiation
         wordViewModel = new ViewModelProvider(this).get(WordViewModel.class);
         wordViewModel.getAllWordsLive().observe(this, new Observer<>() {
             @Override
             public void onChanged(List<Word> words) {
-                StringBuilder text = new StringBuilder();
-                for (int i = 0; i < words.size(); i++) {
-                    Word word = words.get(i);
-                    // text += word.getId() + ":" + word.getWord() + "=" + word.getChineseMeaning() + "\n";      // Modified
-                    text.append(word.getId()).append(":").append(word.getWord()).append("=").append(word.getChineseMeaning()).append("\n");
-                }
-                textView.setText(text.toString());
+                // 设置数据
+                myAdapterNormal.setAllWords(words);
+                myAdapterCard.setAllWords(words);
+                // 通知它刷新
+                myAdapterNormal.notifyDataSetChanged();
+                myAdapterCard.notifyDataSetChanged();
             }
         });
 
         // bind
-        textView = findViewById(R.id.textView);
+        aSwitch = findViewById(R.id.switcher);
         btnInsert = findViewById(R.id.btnInsert);
         btnClear = findViewById(R.id.btnClear);
         btnUpdate = findViewById(R.id.btnUpdate);
         btnDelete = findViewById(R.id.btnDelete);
 
         //listener
+        aSwitch.setOnCheckedChangeListener(this);
         btnInsert.setOnClickListener(this);
         btnClear.setOnClickListener(this);
         btnUpdate.setOnClickListener(this);
         btnDelete.setOnClickListener(this);
+
+    }
+
+
+    /**
+     * Called when the checked state of a compound button has changed.
+     *
+     * @param buttonView The compound button view whose state has changed.
+     * @param isChecked  The new checked state of buttonView.
+     */
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+        if (isChecked) {
+            recyclerView.setAdapter(myAdapterCard);
+        } else {
+            recyclerView.setAdapter(myAdapterNormal);
+        }
 
     }
 
@@ -72,10 +112,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         int id = view.getId();
 
-        if (id == R.id.btnInsert) {
-            Word word1 = new Word("Hello", "你好！");
-            Word word2 = new Word("World", "世界！");
-            wordViewModel.insertWords(word1, word2);
+       if (id == R.id.btnInsert) {
+            for (int i = 0; i < english.length; i++) {
+                wordViewModel.insertWords(new Word(english[i], chinese[i]));
+            }
         } else if (id == R.id.btnClear) {
             wordViewModel.deleteAllWords();
         } else if (id == R.id.btnUpdate) {
