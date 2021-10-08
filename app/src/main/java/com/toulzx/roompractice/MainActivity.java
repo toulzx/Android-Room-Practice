@@ -1,8 +1,12 @@
 package com.toulzx.roompractice;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.room.Room;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -12,13 +16,12 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private static final String DATABASE_FILE_NAME = "word_database";
-
-    private WordDatabase wordDatabase;
-    private WordDao wordDao;
+    public static final String DATABASE_FILE_NAME = "word_database";
 
     private TextView textView;
     private Button btnInsert, btnClear, btnUpdate, btnDelete;
+
+    private WordViewModel wordViewModel;
 
 
     @Override
@@ -28,11 +31,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // database
-        wordDatabase = Room.databaseBuilder(this, WordDatabase.class, DATABASE_FILE_NAME)
-                .allowMainThreadQueries()                   // 强制允许在主线程运行（真正项目不要这样做）
-                .build();
-        wordDao = wordDatabase.getWordDao();
+        // viewModel instantiation
+        wordViewModel = new ViewModelProvider(this).get(WordViewModel.class);
+        wordViewModel.getAllWordsLive().observe(this, new Observer<>() {
+            @Override
+            public void onChanged(List<Word> words) {
+                StringBuilder text = new StringBuilder();
+                for (int i = 0; i < words.size(); i++) {
+                    Word word = words.get(i);
+                    // text += word.getId() + ":" + word.getWord() + "=" + word.getChineseMeaning() + "\n";      // Modified
+                    text.append(word.getId()).append(":").append(word.getWord()).append("=").append(word.getChineseMeaning()).append("\n");
+                }
+                textView.setText(text.toString());
+            }
+        });
 
         // bind
         textView = findViewById(R.id.textView);
@@ -46,9 +58,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnClear.setOnClickListener(this);
         btnUpdate.setOnClickListener(this);
         btnDelete.setOnClickListener(this);
-
-        // update textview
-        updateView();
 
     }
 
@@ -66,41 +75,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (id == R.id.btnInsert) {
             Word word1 = new Word("Hello", "你好！");
             Word word2 = new Word("World", "世界！");
-            wordDao.insertWords(word1, word2);
-            updateView();
+            wordViewModel.insertWords(word1, word2);
         } else if (id == R.id.btnClear) {
-            wordDao.deleteAllWords();
-            updateView();
+            wordViewModel.deleteAllWords();
         } else if (id == R.id.btnUpdate) {
             Word word = new Word("Hi", "你好啊");
             word.setId(getCurrentId());
-            wordDao.updateWords(word);
-            updateView();
+            wordViewModel.updateWords(word);
         } else if (id == R.id.btnDelete) {
             Word word = new Word("Hi", "你好啊");
             word.setId(getCurrentId());
-            wordDao.deleteWords(word);
-            updateView();
+            wordViewModel.deleteWords(word);
         }
-
-    }
-
-
-    /**
-     * Update textView
-     */
-    private void updateView() {
-
-        List<Word> list = wordDao.getAllWords();
-
-        String text = "";
-
-        for (int i = 0; i < list.size(); i++) {
-            Word word = list.get(i);
-            text += word.getId() + ":" + word.getWord() + "=" + word.getChineseMeaning() + "\n";
-        }
-
-        textView.setText(text);
 
     }
 
@@ -111,11 +97,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private int getCurrentId() {
 
-        List<Word> list = wordDao.getAllWords();
+        LiveData<List<Word>> liveData = wordViewModel.getAllWordsLive();
 
-        Word word = list.get(0);
+        Word word = liveData.getValue().get(0);
 
         return word.getId();
 
     }
+
 }
