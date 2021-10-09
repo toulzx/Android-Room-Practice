@@ -53,36 +53,18 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View itemView;
+
         if (useCardView) {
             itemView = layoutInflater.inflate(R.layout.cell_card_2, parent, false);
         } else {
             itemView = layoutInflater.inflate(R.layout.cell_normal_2, parent, false);
         }
-        return new MyViewHolder(itemView);
-    }
 
-    /* 绑定时呼叫 */
-    @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        Word word = allWords.get(position);
-        holder.textViewNumber.setText(String.valueOf(position + 1));
-        holder.textViewEnglish.setText(word.getWord());
-        holder.textViewChinese.setText(word.getChineseMeaning());
-        // 如果没有以下此句，则初始化时`setChecked()`会调用我们写好的监听器，重复的操作往往会引起 bugs！
-        // 比如将操作过 `switch` 的 `item` 移动到可视视图之外，再滚动回来，会发现之前的设置被还原了。
-        // 原因是这些 `items` 都是可回收的，滚动过程中会调用到 setOnCheckedChangeListener
-        holder.aSwitchInvisible.setOnCheckedChangeListener(null);
-        if (word.isChineseInvisible()) {
-            holder.textViewChinese.setVisibility((View.GONE));
-            holder.aSwitchInvisible.setChecked(true);
-        } else {
-            holder.textViewChinese.setVisibility((View.VISIBLE));
-            holder.aSwitchInvisible.setChecked(false);
-        }
+        MyViewHolder holder = new MyViewHolder(itemView);
 
-        // 设置监听器，使点击调用网页词典查询（在此之前 `cell.xml` 的根节点必须设定为 `clickable = true`）
         holder.constraintLayoutLeft.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -96,9 +78,8 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         holder.aSwitchInvisible.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // 此处刷新了数据更新，会调用 MainActivity 中的 `wordViewModel.getAllWordsLive().observe()` 再次刷新，
-                // 如果不做处理，切换按钮界面就会十分卡顿。
-                // bug fixed ：以下 `if语句` 区别于之前 77 行！
+                // 绑定在 onBindViewHolder 中保存的 `word`
+                Word word = (Word) holder.itemView.getTag(R.id.word_for_view_holder);
                 if (isChecked) {
                     holder.textViewChinese.setVisibility((View.GONE));
                     word.setChineseInvisible(true);
@@ -109,6 +90,29 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
                 wordViewModel.updateWords(word);
             }
         });
+
+        return holder;
+
+    }
+
+    /* 绑定时呼叫 */
+    @Override
+    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+        Word word = allWords.get(position);
+        // 创建 tag 使 `holder` 可在其它地方调用它存储的对象，这里将 word 传过去，利用唯一的 id 避免滥用 key 导致冲突
+        holder.itemView.setTag(R.id.word_for_view_holder ,word);
+        holder.textViewNumber.setText(String.valueOf(position + 1));
+        holder.textViewEnglish.setText(word.getWord());
+        holder.textViewChinese.setText(word.getChineseMeaning());
+        if (word.isChineseInvisible()) {
+            holder.textViewChinese.setVisibility((View.GONE));
+            holder.aSwitchInvisible.setChecked(true);
+        } else {
+            holder.textViewChinese.setVisibility((View.VISIBLE));
+            holder.aSwitchInvisible.setChecked(false);
+        }
+        // 不要在 `onBindViewHolder` 设置 listener, 因为它是频繁调用的，或不断重复新建 listener => 性能损失！
+        // 将 listener 移至 onCreateViewHolder 中
     }
 
     /* 返回列表总的数据个数 */
