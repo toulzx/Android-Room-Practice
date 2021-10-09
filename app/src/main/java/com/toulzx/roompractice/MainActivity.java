@@ -18,8 +18,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
-    public static final String DATABASE_FILE_NAME = "word_database";
-
     private Switch aSwitch;
     private Button btnInsert, btnClear, btnUpdate, btnDelete;
 
