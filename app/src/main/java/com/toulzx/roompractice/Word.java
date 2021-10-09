@@ -13,6 +13,8 @@ public class Word {
     private String word;
     @ColumnInfo(name = "chinese_meaning")
     private String chineseMeaning;
+    @ColumnInfo(name = "chinese_invisible")
+    private boolean chineseInvisible;
 
     // `Alt` + `Insert` => Generate
 
@@ -35,6 +37,8 @@ public class Word {
         return chineseMeaning;
     }
 
+    public boolean isChineseInvisible() { return chineseInvisible; }
+
     // Setter
 
     public void setId(int id) {
@@ -48,5 +52,7 @@ public class Word {
     public void setChineseMeaning(String chineseMeaning) {
         this.chineseMeaning = chineseMeaning;
     }
+
+    public void setChineseInvisible(boolean chineseInvisible) { this.chineseInvisible = chineseInvisible; }
 
 }

@@ -11,13 +11,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 // Android Studio 4.x 中使用底栏的 App Inspection 工具可查看数据库
 
-@Database(
-        entities = {Word.class},     // 复数->集合，集合中元素用`,`隔开
-        version = 4                  // 数据库版本
-)
-
 // 若有多个 Entity, 则改写多个 dao
 
+@Database(
+        entities = {Word.class},     // 复数->集合，集合中元素用`,`隔开
+        version = 5 )                // 数据库版本
 public abstract class WordDatabase extends RoomDatabase {
 
     public static final String DATABASE_FILE_NAME = "word_database";
@@ -32,8 +30,8 @@ public abstract class WordDatabase extends RoomDatabase {
                     context.getApplicationContext(),
                     WordDatabase.class,
                     DATABASE_FILE_NAME)
-//                    .fallbackToDestructiveMigration()       // 破坏式迁移，会清空原有数据
-                    .addMigrations(MIGRATION_3_4)        // 使用自己创建的迁移策略
+                    .fallbackToDestructiveMigration()       // 破坏式迁移，会清空原有数据
+//                    .addMigrations(MIGRATION_4_5)        // 使用自己创建的迁移策略
                     .build();
         }
         return INSTANCE;
@@ -67,6 +65,14 @@ public abstract class WordDatabase extends RoomDatabase {
             database.execSQL("DROP TABLE word");
             // 改名新表
             database.execSQL("ALTER TABLE word_temp RENAME to word");
+        }
+    };
+
+    private static final Migration MIGRATION_4_5 = new Migration(4,5) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // 插入 chinese_invisible 列
+            database.execSQL("ALTER TABLE word ADD COLUMN chinese_invisible INTEGER NOT NULL DEFAULT 0");
         }
     };
 

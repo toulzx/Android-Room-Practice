@@ -5,7 +5,9 @@
       <map>
         <entry key="..\:/Android/myTry/RoomPractice/app/src/main/res/layout/activity_main.xml" value="0.264" />
         <entry key="..\:/Android/myTry/RoomPractice/app/src/main/res/layout/cell_card.xml" value="0.67" />
+        <entry key="..\:/Android/myTry/RoomPractice/app/src/main/res/layout/cell_card_2.xml" value="0.26145833333333335" />
         <entry key="..\:/Android/myTry/RoomPractice/app/src/main/res/layout/cell_normal.xml" value="0.67" />
+        <entry key="..\:/Android/myTry/RoomPractice/app/src/main/res/layout/cell_normal_2.xml" value="0.264" />
       </map>
     </option>
   </component>

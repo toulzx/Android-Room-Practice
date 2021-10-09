@@ -8,11 +8,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
-import android.widget.TextView;
 
 import java.util.List;
 
@@ -39,45 +39,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        // default
+        /* default */
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //  adapter & recycleView
-        myAdapterNormal = new MyAdapter(false);
-        myAdapterCard = new MyAdapter(true);
-
+        /* bind */
         recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(myAdapterNormal);
-
-        // viewModel instantiation
-        wordViewModel = new ViewModelProvider(this).get(WordViewModel.class);
-        wordViewModel.getAllWordsLive().observe(this, new Observer<>() {
-            @Override
-            public void onChanged(List<Word> words) {
-                // 设置数据
-                myAdapterNormal.setAllWords(words);
-                myAdapterCard.setAllWords(words);
-                // 通知它刷新
-                myAdapterNormal.notifyDataSetChanged();
-                myAdapterCard.notifyDataSetChanged();
-            }
-        });
-
-        // bind
-        aSwitch = findViewById(R.id.switcher);
+        aSwitch = findViewById(R.id.aSwitch);
         btnInsert = findViewById(R.id.btnInsert);
         btnClear = findViewById(R.id.btnClear);
         btnUpdate = findViewById(R.id.btnUpdate);
         btnDelete = findViewById(R.id.btnDelete);
 
-        //listener
+        /* listener */
         aSwitch.setOnCheckedChangeListener(this);
         btnInsert.setOnClickListener(this);
         btnClear.setOnClickListener(this);
         btnUpdate.setOnClickListener(this);
         btnDelete.setOnClickListener(this);
+
+        /* viewModel */
+        // 由于此时 adapter 的实例化引用了 viewModel，viewModel 实例化需在 adapter 之前进行
+        wordViewModel = new ViewModelProvider(this).get(WordViewModel.class);
+        wordViewModel.getAllWordsLive().observe(this, new Observer<>() {
+            @Override
+            public void onChanged(List<Word> words) {
+                // 设置数据
+                int originalItemCount = myAdapterNormal.getItemCount();
+                myAdapterNormal.setAllWords(words);
+                myAdapterCard.setAllWords(words);
+                // 通知它刷新
+                // 增加判断条件，如果只是开关改变则无需二次刷新
+                int currentItemCount = myAdapterNormal.getItemCount();
+                if (originalItemCount != currentItemCount || words.get(0).getWord().equals("Hi")) {
+                    myAdapterNormal.notifyDataSetChanged();
+                    myAdapterCard.notifyDataSetChanged();
+                }
+            }
+        });
+
+        /* adapter & recycleView */
+        myAdapterNormal = new MyAdapter(false, wordViewModel);
+        myAdapterCard = new MyAdapter(true, wordViewModel);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(myAdapterNormal);
 
     }
 

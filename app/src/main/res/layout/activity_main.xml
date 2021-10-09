@@ -31,7 +31,7 @@
         app:layout_constraintBottom_toTopOf="@+id/btnClear"
         app:layout_constraintEnd_toStartOf="@+id/btnUpdate"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/switcher" />
+        app:layout_constraintTop_toBottomOf="@+id/aSwitch" />
 
     <Button
         android:id="@+id/btnUpdate"
@@ -41,7 +41,7 @@
         app:layout_constraintBottom_toTopOf="@+id/btnDelete"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/btnInsert"
-        app:layout_constraintTop_toBottomOf="@+id/switcher" />
+        app:layout_constraintTop_toBottomOf="@+id/aSwitch" />
 
     <Button
         android:id="@+id/btnClear"
@@ -65,7 +65,7 @@
         app:layout_constraintVertical_bias="1.0" />
 
     <Switch
-        android:id="@+id/switcher"
+        android:id="@+id/aSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Switch"
