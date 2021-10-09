@@ -13,10 +13,6 @@ public class Word {
     private String word;
     @ColumnInfo(name = "chinese_meaning")
     private String chineseMeaning;
-    @ColumnInfo(name = "foo_data")
-    private boolean foo;
-    @ColumnInfo(name = "bar_data")
-    private boolean bar;
 
     // `Alt` + `Insert` => Generate
 
@@ -39,10 +35,6 @@ public class Word {
         return chineseMeaning;
     }
 
-    public boolean isFoo() { return foo; }
-
-    public boolean isBar() { return bar; }
-
     // Setter
 
     public void setId(int id) {
@@ -57,7 +49,4 @@ public class Word {
         this.chineseMeaning = chineseMeaning;
     }
 
-    public void setFoo(boolean foo) { this.foo = foo; }
-
-    public void setBar(boolean bar) { this.bar = bar; }
 }

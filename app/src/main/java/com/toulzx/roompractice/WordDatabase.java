@@ -13,7 +13,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 @Database(
         entities = {Word.class},     // 复数->集合，集合中元素用`,`隔开
-        version = 3                  // 数据库版本
+        version = 4                  // 数据库版本
 )
 
 // 若有多个 Entity, 则改写多个 dao
@@ -33,7 +33,7 @@ public abstract class WordDatabase extends RoomDatabase {
                     WordDatabase.class,
                     DATABASE_FILE_NAME)
 //                    .fallbackToDestructiveMigration()       // 破坏式迁移，会清空原有数据
-                    .addMigrations(MIGRATION_2_3)        // 使用自己创建的迁移策略
+                    .addMigrations(MIGRATION_3_4)        // 使用自己创建的迁移策略
                     .build();
         }
         return INSTANCE;
@@ -48,7 +48,25 @@ public abstract class WordDatabase extends RoomDatabase {
             // sql 中没有 boolean，因此我们用 integer 存储 `bar_data`
             // 定义 `bar_data` 的缺省值为 1
             database.execSQL("ALTER TABLE word ADD COLUMN bar_data INTEGER NOT NULL DEFAULT 1");
-            // 补充：仅 SQLite 中有 `DROP` 字段可以删除内容，删除的实现比较麻烦，需要重新建新表迁移
+        }
+    };
+
+    private static final Migration MIGRATION_3_4 = new Migration(3,4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // 仅 SQLite 中有 `DROP` 字段可以删除内容，删除的实现比较麻烦，需要重新建新表迁移
+            // SQL 中字符串称为 `TEXT`
+            // 注意变量名保持一致
+            database.execSQL("CREATE TABLE word_temp " +
+                    "(id INTEGER PRIMARY KEY NOT NULL, english_word TEXT, chinese_meaning TEXT)");
+            // 插入新表
+            database.execSQL("INSERT INTO word_temp " +
+                    "(id, english_word, chinese_meaning) " +
+                    "SELECT id, english_word, chinese_meaning FROM word");
+            // 删除旧表
+            database.execSQL("DROP TABLE word");
+            // 改名新表
+            database.execSQL("ALTER TABLE word_temp RENAME to word");
         }
     };
 
