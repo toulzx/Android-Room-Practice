@@ -6,7 +6,7 @@ android {
     compileSdk 30
 
     defaultConfig {
-        applicationId "com.toulzx.roompractice"
+        applicationId "com.toulzx.roompracticebasic"
         minSdk 26
         targetSdk 30
         versionCode 1

@@ -71,7 +71,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // 通知它刷新
                 // 增加判断条件，如果只是开关改变则无需二次刷新
                 int currentItemCount = myAdapterNormal.getItemCount();
-                if (originalItemCount != currentItemCount || words.get(0).getWord().equals("Hi")) {
+                // bug fixed
+                if (originalItemCount == 0 || originalItemCount != currentItemCount || words.get(0).getWord().equals("Hi")) {
                     myAdapterNormal.notifyDataSetChanged();
                     myAdapterCard.notifyDataSetChanged();
                 }

@@ -98,12 +98,13 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 // 此处刷新了数据更新，会调用 MainActivity 中的 `wordViewModel.getAllWordsLive().observe()` 再次刷新，
                 // 如果不做处理，切换按钮界面就会十分卡顿。
+                // bug fixed ：以下 `if语句` 区别于之前 77 行！
                 if (isChecked) {
                     holder.textViewChinese.setVisibility((View.GONE));
-                    holder.aSwitchInvisible.setChecked(true);
+                    word.setChineseInvisible(true);
                 } else {
                     holder.textViewChinese.setVisibility((View.VISIBLE));
-                    holder.aSwitchInvisible.setChecked(false);
+                    word.setChineseInvisible(false);
                 }
                 wordViewModel.updateWords(word);
             }
